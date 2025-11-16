@@ -1,5 +1,5 @@
 {
-  "name": "nest-enterprise-auth-starter",
+  "name": "nestjs-jwt-rbac-boilerplate",
   "version": "0.0.1",
   "description": "Production-ready NestJS authentication system with JWT, refresh tokens, and RBAC",
   "author": "Sabin Shrestha <sabin.shrestha.er@gmail.com>",

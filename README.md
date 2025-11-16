@@ -1,10 +1,10 @@
-# nest-enterprise-auth-starter
+# nestjs-jwt-rbac-boilerplate
 
 > Complete JWT authentication system with refresh token rotation, RBAC, and zero XSS risk
 
 <div align="center">
 
-![nest-enterprise-auth-starter Banner](banner.png)
+![nestjs-jwt-rbac-boilerplate Banner](banner.png)
 
 </div>
 
@@ -44,8 +44,8 @@
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/masabinhok/nest-enterprise-auth-starter.git
-cd nest-enterprise-auth-starter/api
+git clone https://github.com/masabinhok/nestjs-jwt-rbac-boilerplate.git
+cd nestjs-jwt-rbac-boilerplate/api
 npm install
 ```
 
@@ -573,7 +573,7 @@ MIT - see [LICENSE](LICENSE) file.
 
 **Built this? Please ⭐ star the repo so others find it.**
 
-Need help? [Open an issue](https://github.com/masabinhok/nest-enterprise-auth-starter/issues) (response < 24h)
+Need help? [Open an issue](https://github.com/masabinhok/nestjs-jwt-rbac-boilerplate/issues) (response < 24h)
 
 Built by [Sabin Shrestha](https://sabinshrestha69.com.np) • [GitHub](https://github.com/masabinhok)
 
