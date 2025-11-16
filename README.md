@@ -1,6 +1,5 @@
 # 🛡️ NestJS Auth Starter - Production-Ready Authentication
 
-[![CI/CD](https://github.com/yourusername/nest-auth-template/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/yourusername/nest-auth-template/actions)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-11.0-red.svg)](https://nestjs.com/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -18,8 +17,6 @@
 - 🛡️ **Enterprise Security** - Rate limiting, bcrypt (12 rounds), Helmet headers, input validation
 - 📊 **Structured Logging** - Pino JSON logs with PII redaction and correlation IDs
 - ✅ **Health Check Endpoints** - Kubernetes/ECS-ready liveness & readiness probes
-- 🐳 **Docker Ready** - Multi-stage builds with docker-compose for dev & production
-- 🚀 **CI/CD Pipeline** - GitHub Actions with automated testing and deployments
 - 📖 **Comprehensive Docs** - Full API documentation and deployment guides
 
 ---
@@ -31,7 +28,6 @@ Before you begin, ensure you have the following installed:
 - **Node.js** >= 20.x ([Download](https://nodejs.org/))
 - **PostgreSQL** >= 16.x ([Download](https://www.postgresql.org/download/))
 - **npm** >= 10.x (comes with Node.js)
-- **Docker** (optional, for containerized deployment)
 
 ---
 
@@ -991,48 +987,7 @@ curl -X POST http://localhost:8080/api/v1/auth/logout \
 
 ## 📦 Deployment
 
-### Docker Deployment
-
-#### Development (Database Only)
-
-```bash
-# Start PostgreSQL
-npm run docker:dev
-
-# In another terminal, start app locally
-npm run start:dev
-```
-
-#### Production (Full Stack)
-
-```bash
-# Build Docker image
-npm run docker:build
-
-# Start services (PostgreSQL + API)
-npm run docker:up
-
-# View logs
-npm run docker:logs
-
-# Stop services
-npm run docker:down
-```
-
-**Services:**
-- **API**: `http://localhost:8080/api/v1`
-- **PostgreSQL**: `localhost:5432`
-
-#### Docker Compose Features
-
-✅ Multi-stage builds (optimized image size)  
-✅ Non-root user for security  
-✅ Health checks for orchestration  
-✅ Automatic database migrations on startup  
-✅ Named volumes for data persistence  
-✅ Custom bridge network for service communication  
-
-### Manual Deployment
+### Production Deployment
 
 #### Prerequisites
 
@@ -1095,42 +1050,6 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
-```
-
-### CI/CD Pipeline
-
-The project includes GitHub Actions workflows:
-
-#### Workflow 1: `ci-cd.yml` (Main Pipeline)
-
-**Triggers:** Push to `main` or `develop`
-
-**Jobs:**
-1. ✅ Lint & Type Check
-2. ✅ Unit Tests (with coverage)
-3. ✅ Integration Tests (PostgreSQL service)
-4. ✅ Build Application
-5. ✅ Docker Build & Push (on `main` only)
-6. ✅ Security Scan (npm audit + Snyk)
-7. ✅ Deploy to Production (customizable)
-
-#### Workflow 2: `pr-checks.yml` (Pull Requests)
-
-**Triggers:** Pull request opened/updated
-
-**Jobs:**
-1. ✅ Quick validation (lint, build, test)
-2. ✅ PR size check
-3. ✅ Automated comment with results
-
-#### Required GitHub Secrets
-
-Add these in **Settings → Secrets and variables → Actions**:
-
-```
-DOCKER_USERNAME      # Docker Hub username
-DOCKER_PASSWORD      # Docker Hub access token
-SNYK_TOKEN          # Snyk API token (optional)
 ```
 
 ### Production Checklist
@@ -1393,8 +1312,6 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
 **Solutions:**
 ```bash
 # 1. Check PostgreSQL is running
-docker ps  # If using Docker
-# OR
 sudo systemctl status postgresql  # Linux
 # OR
 pg_isready -h localhost -p 5432  # Any OS with psql
@@ -1406,8 +1323,10 @@ echo $DATABASE_URL
 # 3. Test connection manually
 psql "postgresql://postgres:postgres@localhost:5432/nest_auth_db"
 
-# 4. Start Docker database
-npm run docker:dev
+# 4. Ensure PostgreSQL is started
+# Windows: Start from Services or pgAdmin
+# Linux: sudo systemctl start postgresql
+# macOS: brew services start postgresql
 ```
 
 ---
