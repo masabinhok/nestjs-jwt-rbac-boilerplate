@@ -1,8 +1,8 @@
 {
   "name": "api",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Production-ready NestJS authentication system with JWT, refresh tokens, and RBAC",
+  "author": "Sabin Shrestha <sabin.shrestha.er@gmail.com>",
   "private": true,
   "license": "MIT",
   "scripts": {

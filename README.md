@@ -38,8 +38,8 @@
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/yourusername/nest-auth-template.git
-cd nest-auth-template/api
+git clone https://github.com/masabinhok/production-ready-nestjs-auth.git
+cd production-ready-nestjs-auth/api
 npm install
 ```
 
@@ -567,6 +567,8 @@ MIT - see [LICENSE](LICENSE) file.
 
 **Built this? Please ⭐ star the repo so others find it.**
 
-Need help? [Open an issue](../../issues) (response < 24h)
+Need help? [Open an issue](https://github.com/masabinhok/production-ready-nestjs-auth/issues) (response < 24h)
+
+Built by [Sabin Shrestha](https://sabinshrestha69.com.np) • [GitHub](https://github.com/masabinhok)
 
 </div>
