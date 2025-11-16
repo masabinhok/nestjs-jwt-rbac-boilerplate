@@ -28,8 +28,11 @@ model User {
   passwordHash String  @db.Text
   role      UserRole @default(USER)
 
-  refreshToken String? @db.Text  // single device refresh token
+  refreshToken String? @db.Text  // Legacy field - kept for backward compatibility
   isActive  Boolean  @default(true) // for soft delete
+
+  // Relations
+  refreshTokens RefreshToken[]
 
   // add fields as required
 
@@ -37,6 +40,24 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  deviceInfo String? @db.VarChar(255) // Browser/device identifier
+  ipAddress  String? @db.VarChar(45)  // IPv4 or IPv6
+  
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
 }
 
 

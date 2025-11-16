@@ -8,10 +8,23 @@ import { loggerConfig } from './config/logger.config';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AuthGuard } from './common/guards/auth.guard';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
     LoggerModule.forRoot(loggerConfig),
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60000, // 1 minute
+        limit: 10,  // 10 requests per minute
+      },
+      {
+        name: 'strict',
+        ttl: 60000, // 1 minute
+        limit: 5,   // 5 requests per minute for auth endpoints
+      },
+    ]),
     AppConfigModule,
     AuthModule,
     UsersModule,
@@ -19,6 +32,10 @@ import { AuthGuard } from './common/guards/auth.guard';
   ],
   controllers: [],
   providers: [
+    {
+      provide: 'APP_GUARD',
+      useClass: ThrottlerGuard,
+    },
     {
       provide: 'APP_GUARD',
       useClass: AuthGuard,

@@ -39,7 +39,12 @@ export class AuthService {
       },
     });
 
-    this.logger.log(`New user registered: ${newUser.id} - ${newUser.email}`);
+    // Log without PII (email address)
+    this.logger.log({
+      message: 'New user registered',
+      userId: newUser.id,
+      role: newUser.role,
+    });
 
     return {
       user: {
@@ -52,36 +57,48 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto){
+  async login(loginDto: LoginDto, deviceInfo?: string, ipAddress?: string){
     const {email, password} = loginDto;
 
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
 
-    if(!user){
-      throw new NotFoundException('User not found');
-    }
+    // Prevent timing attacks by always hashing, even if user doesn't exist
+    const passwordHash = user?.passwordHash || await this.hashData('dummy-password-to-prevent-timing-attack');
+    const passwordMatches = await bcrypt.compare(password, passwordHash);
 
-    const passwordMatches = await bcrypt.compare(
-      password, user.passwordHash
-    );
-
-    if(!passwordMatches){
-      throw new UnauthorizedException('Invalid credentials');
+    // Use consistent error message to prevent account enumeration
+    if(!user || !user.isActive || !passwordMatches){
+      throw new UnauthorizedException('Invalid email or password');
     }
 
     const tokens = await this.generateTokens(user);
     const hashedRt = await this.hashData(tokens.refreshToken);
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        refreshToken: hashedRt,
-      }
-    })
+    // Store refresh token with device info for multi-device support
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
 
-    this.logger.log(`User logged in: ${user.id} - ${user.email} at ${new Date().toISOString()}`);
+    await this.prisma.refreshToken.create({
+      data: {
+        token: hashedRt,
+        userId: user.id,
+        deviceInfo: deviceInfo || 'Unknown Device',
+        ipAddress: ipAddress || 'Unknown IP',
+        expiresAt,
+      }
+    });
+
+    // Clean up expired tokens for this user
+    await this.cleanupExpiredTokens(user.id);
+
+    this.logger.log({
+      message: 'User logged in',
+      userId: user.id,
+      role: user.role,
+      timestamp: new Date().toISOString(),
+    });
 
     return {
       user: {
@@ -94,42 +111,85 @@ export class AuthService {
     }
   }
 
-  async refreshToken(userId: string, rt: string) {
+  async refreshToken(userId: string, rt: string, deviceInfo?: string, ipAddress?: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
 
-    if(!user || !user.refreshToken) {
+    if(!user || !user.isActive) {
       throw new ForbiddenException('Invalid refresh token');
     }
 
-    const matches = await bcrypt.compare(
-      rt, user.refreshToken
-    )
+    // Find matching refresh token in database
+    const storedTokens = await this.prisma.refreshToken.findMany({
+      where: { 
+        userId: user.id,
+        expiresAt: { gte: new Date() }
+      }
+    });
 
-    if(!matches){
+    let isValidToken = false;
+    let validTokenId: string | null = null;
+
+    // Check if provided token matches any stored token
+    for (const storedToken of storedTokens) {
+      const matches = await bcrypt.compare(rt, storedToken.token);
+      if (matches) {
+        isValidToken = true;
+        validTokenId = storedToken.id;
+        break;
+      }
+    }
+
+    if(!isValidToken || !validTokenId){
       throw new UnauthorizedException('Invalid refresh token');
     }
 
+    // Generate new tokens
     const tokens = await this.generateTokens(user);
     const hashedRt = await this.hashData(tokens.refreshToken);
-    await this.prisma.user.update({
-      where: { id: user.id },
+
+    // Update the refresh token (rotation)
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
+
+    await this.prisma.refreshToken.update({
+      where: { id: validTokenId },
       data: {
-        refreshToken: hashedRt,
+        token: hashedRt,
+        deviceInfo: deviceInfo || 'Unknown Device',
+        ipAddress: ipAddress || 'Unknown IP',
+        expiresAt,
+        updatedAt: new Date(),
       }
-    })
+    });
 
     return tokens;
   }
 
-  async logout(userId: string) {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        refreshToken: null,
+  async logout(userId: string, rt?: string) {
+    if (rt) {
+      // Find and delete the specific refresh token
+      const storedTokens = await this.prisma.refreshToken.findMany({
+        where: { userId }
+      });
+
+      for (const storedToken of storedTokens) {
+        const matches = await bcrypt.compare(rt, storedToken.token);
+        if (matches) {
+          await this.prisma.refreshToken.delete({
+            where: { id: storedToken.id }
+          });
+          break;
+        }
       }
-    });
+    } else {
+      // Logout from all devices
+      await this.prisma.refreshToken.deleteMany({
+        where: { userId }
+      });
+    }
+
     return {
       message: 'Logged out successfully',
     };
@@ -157,7 +217,7 @@ export class AuthService {
   // Helper Methods
 
   async hashData(data: string): Promise<string> {
-    const salt = await bcrypt.genSalt();
+    const salt = await bcrypt.genSalt(12); // Use 12 rounds for 2025 security standards
     return bcrypt.hash(data, salt);
   }
 
@@ -183,5 +243,30 @@ export class AuthService {
       accessToken,
       refreshToken
     };
+  }
+
+  private async cleanupExpiredTokens(userId: string) {
+    // Remove expired refresh tokens for this user
+    await this.prisma.refreshToken.deleteMany({
+      where: {
+        userId,
+        expiresAt: { lt: new Date() }
+      }
+    });
+
+    // Optional: Limit to 5 most recent tokens per user
+    const tokens = await this.prisma.refreshToken.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      skip: 5,
+    });
+
+    if (tokens.length > 0) {
+      await this.prisma.refreshToken.deleteMany({
+        where: {
+          id: { in: tokens.map(t => t.id) }
+        }
+      });
+    }
   }
 }

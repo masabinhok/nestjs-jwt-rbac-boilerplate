@@ -59,9 +59,17 @@ export class UsersService {
     }
 
     async deleteUserById(userId: string) {
-        await this.prisma.user.delete({
+        // Soft delete: set isActive to false instead of hard delete
+        await this.prisma.user.update({
             where: { id: userId },
+            data: { isActive: false },
         });
+        
+        // Also invalidate all refresh tokens for this user
+        await this.prisma.refreshToken.deleteMany({
+            where: { userId },
+        });
+        
         return { message: 'User deleted successfully' };
     }
 

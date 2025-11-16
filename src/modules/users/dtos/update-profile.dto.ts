@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, MaxLength, ValidateNested, MinLength } from 'class-validator';
+import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -7,8 +7,6 @@ export class UpdateProfileDto {
   @MaxLength(100)
   fullName?: string;
 
-  @IsOptional()
-  @IsEmail()
-  @MaxLength(100)
-  email?: string;
+  // Email update removed - requires separate verification flow for security
+  // Implement email change in a dedicated endpoint with verification
 }
