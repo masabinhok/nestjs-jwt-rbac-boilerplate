@@ -12,7 +12,7 @@
 [![Postman Collection](https://img.shields.io/badge/Postman-Collection-FF6C37?logo=postman)](https://web.postman.co/workspace/My-Workspace~f38931e2-b991-4b76-8f08-cd3c064519a2/collection/37117103-972a16b7-a0de-42de-b220-e1a872a4ffc1?action=share&source=copy-link&creator=37117103)
 [![Medium Blog](https://img.shields.io/badge/Medium-Blog_Post-12100E?logo=medium)](https://medium.com/@sabin.shrestha.er/stop-rebuilding-auth-a-production-ready-jwt-rbac-template-for-nestjs-18d99f9b8944)
 
-###  **If this saves you 40+ hours, ⭐ the repo **
+###  **If this saves you 40+ hours, ⭐ the repo**
 
 ---
 
