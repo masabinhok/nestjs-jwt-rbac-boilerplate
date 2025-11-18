@@ -18,6 +18,20 @@
 
 </div>
 
+---
+
+## 🚀 **Quick Start with CLI**
+
+```bash
+npx create-nestjs-auth@latest
+```
+
+Interactive scaffolding tool that sets up this entire boilerplate in a few steps. Configure database, JWT secrets, and dependencies automatically.
+
+[GitHub](https://github.com/masabinhok/create-nestjs-auth) • [npm](https://www.npmjs.com/package/create-nestjs-auth)
+
+---
+
 ## What This Solves
 
 - **Problem**: Building secure JWT auth with refresh tokens in NestJS takes 40+ hours and requires deep security knowledge.
